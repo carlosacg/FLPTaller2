@@ -12,10 +12,8 @@
 
 
 ;; DATATYPE
-; El tipo de dato suma-anidada  es el constructor
-; "valor"; es un numero
-; "suma"; espera  2 elementos, de tipo suma-anidada
-; suma-anidada?: valida si el dato dado es una suma-anidada
+; El datatype suma-anidaa, define los predicados,
+; constructores y extractores
 
 (define-datatype suma-anidada suma-anidada?
   (valor-type (x number?))
@@ -24,40 +22,39 @@
   )
 
 
-;; unparseTree: exp {suma-anidada} -> list
+;; CODIGO CLIENTE
+
+; Proposito:
+; Toma una suma-anidada, que este bien contruida 
+; y sumar sus valores
+
+(define sumar
+  (lambda (exp)
+    (cases suma-anidada exp
+      (valor-type (valor) valor)
+      (suma-type (body1 body2)
+                 (+ (sumar body1) (sumar body2)))
+      )))
+
+
+;; UNPARSE
 ; Proposito;
 ; Toma una suma-anidada y la convierte en una lista, validando
-; cada producion de la gramatica
+; sus producciones
 
 (define unparse
   (lambda (exp)
     (cases suma-anidada exp
-      (valor-type (x) (list 'valor x))
+      (valor-type (valor) (list 'valor valor))
       (suma-type (body1 body2)
             (list 'suma (unparse body1) (unparse body2))))))
 
 
-;ejemplo de sumas-anidadas
-(define suma1
-  (suma-type (valor-type 8)
-             (suma-type (suma-type (valor-type 25) (valor-type 5))
-                        (valor-type 6)))
- )
 
-(define suma2
-  (suma-type (valor-type 4) (valor-type 3))
-  )
-
-
-;Pruebas:
-(unparse suma1)
-(unparse suma2)
-
-
-;; parseTree: lista {list} -> {suma-anidada}
+;; PARSE
 ; Proposito:
-; Toma una lista y la parsea a un arbol de sistacxis abstracta
-; definido como suma-anidada
+; Toma una lista y la parsea a un arbol de sintaxis abstracta
+; definida en el datatype suma-anidada
 
 (define parse
   (lambda (list-unparse)
@@ -72,12 +69,26 @@
       (else 'invalid))))
 
 
-; Ejemplo de lista unparsed
-(define unparsed1 '(suma (valor 8)(suma (suma (valor 25) (valor 5)) (valor 6))))
-(define unparsed2 '(suma (valor 4) (valor 3)))
-(define unparsed3 '(suma (suma (valor 5) (valor 8)) (valor 3)))
+; ----------------------------
+;; PRUEBAS
+
+; UNPARSE
+;ejemplo de sumas-anidadas, se crean con sintaxis abstracta, el unparse
+; los convierte en sintaxis concreta y lo asigna a las variables
+
+(define unparse1
+  (unparse (suma-type (valor-type 8)
+                    (suma-type (suma-type
+                                (valor-type 25)
+                                (valor-type 5))
+                               (valor-type 6))))
+  )
+
+(define unparse2
+  (unparse (suma-type (valor-type 4) (valor-type 3)))
+  )
+
 
 ;Pruebas: 
-(parse unparsed1)
-(parse unparsed2)
-(parse unparsed3)
+(parse unparse1)
+(parse unparse2)
